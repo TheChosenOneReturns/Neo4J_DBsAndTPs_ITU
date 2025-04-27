@@ -174,8 +174,4 @@ DETACH DELETE p;
 | Escribir Cypher | ✅ | ❌ |
 | Visualización elegante | ✅ | ✅ |
 
----
 
-# 💥 Trabajo Finalizado
-
-✨ ¡Trabajo práctico completo y listo para ser entregado! ✨
