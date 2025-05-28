@@ -1,107 +1,140 @@
-# 🩺 Sistema de Gestión de Historias Clínicas - Neo4j
+# 🩺 Neo4j Medical Records System
 
-Este proyecto implementa un modelo de grafo para gestionar historias clínicas usando Neo4j. Permite representar de forma relacional la información de pacientes, médicos, diagnósticos, tratamientos y más.
-
----
-
-## 🌐 Descripción
-
-El sistema modela entidades como:
-
-- 👤 **Paciente**
-- 🩺 **Historia Clínica**
-- 👨‍⚕️ **Médico**
-- 🧪 **Diagnóstico**
-- 💊 **Tratamiento**
-
-Y las relaciones entre ellos, tales como:
-
-- `TIENE_HISTORIA`
-- `ES_ATENDIDO_POR`
-- `DIAGNOSTICADO_CON`
-- `RECIBE_TRATAMIENTO`
+Este repositorio contiene el diseño y la implementación de una base de datos médica modelada con **Neo4j**. El proyecto busca representar de manera integral las entidades y relaciones involucradas en un sistema de historias clínicas electrónicas.
 
 ---
 
-## 🧪 Tecnologías Utilizadas
+## 📌 Objetivo
 
-- **Base de Datos:** [Neo4j](https://neo4j.com/)
-- **Lenguaje de consultas:** Cypher (`.cyp`)
-- **Visualización:** Neo4j Browser / Desktop
+El objetivo es representar relaciones clínicas complejas entre pacientes, profesionales de salud, consultas, diagnósticos, estudios, medicamentos y centros médicos, utilizando un modelo de grafos altamente legible y visualmente optimizado para el análisis médico.
 
 ---
 
-## ⚙️ Instalación y Ejecución
+## 🧱 Estructura de Datos
 
-1. Instalar Neo4j Desktop o utilizar Neo4j Aura.
-2. Crear un nuevo proyecto y base de datos.
-3. Cargar el archivo `.cyp` con el siguiente procedimiento:
+Las principales entidades del modelo son:
 
-   ### Desde Neo4j Browser:
+- `Paciente`
+- `Profesional`
+- `Consulta`
+- `Diagnóstico`
+- `Tratamiento`
+- `Medicamento`
+- `Estudio`
+- `Resultado`
+- `Documento`
+- `CentroMedico`
+- `Laboratorio`
+- `Especialidad`
+- `SeguroMedico`
 
-   - Abrir la consola de comandos.
-   - Copiar y pegar el contenido del archivo `.cyp`.
-   - Ejecutar los comandos (`Ctrl + Enter`).
+Entre ellas se definen relaciones como:
 
-   ### Desde línea de comandos:
-
-   ```bash
-   cypher-shell -u neo4j -p <password> < documentacion.cyp
-   ```
-
-4. Verificar que se han creado los nodos y relaciones correctamente con:
-
-   ```cypher
-   MATCH (n) RETURN n LIMIT 25;
-   ```
+- `ASISTE_A`
+- `ATIENDE`
+- `DIAGNOSTICA`
+- `PRESCRIBE`
+- `TRATADO_CON`
+- `INCLUYE_MEDICAMENTO`
+- `SOLICITA_ESTUDIO`
+- `TIENE_RESULTADO`
+- `GENERA_DOCUMENTO`
+- `SIGUE_TRATAMIENTO`
+- `USA_MEDICAMENTO`
+- `TIENE_HISTORIAL`
+- `TRABAJA_EN`
+- `TIENE_COBERTURA`
 
 ---
 
-## 🧩 Modelo de Datos
+## 📦 Requisitos
 
-Ejemplo de nodos y relaciones:
+- Neo4j Desktop o Neo4j Aura
+- Cypher como lenguaje de consulta
+- Browser o Bloom para visualización
 
+---
+
+## ⚙️ Ejecución
+
+Podés importar los datos ejecutando el contenido del archivo `.cypher` incluido en este repositorio desde Neo4j Browser o una herramienta compatible.
+
+---
+
+## 🔄 Operaciones CRUD (Entidad: `Paciente`)
+
+### ✅ CREATE
 ```cypher
-(:Paciente {nombre: "Juan Pérez", dni: "12345678"})
--[:TIENE_HISTORIA]->
-(:Historia {fecha: "2024-10-01", observaciones: "Control general"})
--[:ES_ATENDIDO_POR]->
-(:Medico {nombre: "Dra. Gómez", especialidad: "Clínica"})
+CREATE (p:Paciente {
+  id: 'PAC006',
+  nombre: 'Valeria',
+  apellido: 'Martínez',
+  dni: '40123456',
+  fechaNacimiento: date('1992-08-15'),
+  genero: 'Femenino',
+  direccion: 'Av. Libertador 3456, CABA',
+  telefono: '+54911555444555',
+  email: 'valeria.martinez@email.com',
+  grupoSanguineo: 'A-',
+  factorRH: 'Negativo',
+  estado: 'Activo'
+})
+```
+
+### 📖 READ (Obtener todos los pacientes activos)
+```cypher
+MATCH (p:Paciente)
+WHERE p.estado = 'Activo'
+RETURN p.id, p.nombre, p.apellido, p.dni, p.email
+```
+
+### 📖 READ (Buscar paciente por DNI)
+```cypher
+MATCH (p:Paciente {dni: '40123456'})
+RETURN p
+```
+
+### ✏️ UPDATE (Modificar datos de contacto)
+```cypher
+MATCH (p:Paciente {id: 'PAC006'})
+SET p.telefono = '+54911666777888',
+    p.email = 'valeria.martinez.actualizado@email.com',
+    p.direccion = 'Av. Santa Fe 999, CABA'
+```
+
+### 🗑️ DELETE (Eliminar paciente por ID)
+```cypher
+MATCH (p:Paciente {id: 'PAC006'})
+DETACH DELETE p
 ```
 
 ---
 
-## 🔍 Consultas Útiles
+## 📊 Visualización
 
-- **Obtener todas las historias clínicas de un paciente:**
+Para ver la red médica de forma clara:
 
-  ```cypher
-  MATCH (p:Paciente {dni: "12345678"})-[:TIENE_HISTORIA]->(h:Historia)
-  RETURN h;
-  ```
-
-- **Ver pacientes atendidos por un médico específico:**
-
-  ```cypher
-  MATCH (m:Medico {nombre: "Dra. Gómez"})<-[:ES_ATENDIDO_POR]-(h:Historia)<-[:TIENE_HISTORIA]-(p:Paciente)
-  RETURN p.nombre, h.fecha;
-  ```
-
-- **Buscar diagnósticos y tratamientos relacionados:**
-
-  ```cypher
-  MATCH (h:Historia)-[:DIAGNOSTICADO_CON]->(d:Diagnostico)-[:TRATADO_CON]->(t:Tratamiento)
-  RETURN d.nombre, t.nombre;
-  ```
+- Usá Neo4j Browser con consultas `MATCH` amplias (por ejemplo: `MATCH (n)-[r]->(m) RETURN n,r,m`).
+- Aplicá estilos en los nodos (`Paciente` en azul, `Profesional` en verde, `Consulta` en amarillo, etc.) desde la pestaña de **style** de Neo4j.
 
 ---
 
-## 👨‍💻 Autor
+## 📈 Extensiones Futuras
 
-- Ariel
+- Auditoría de accesos y ediciones.
+- Integración con estándares FHIR.
+- Soporte para multi-idioma.
+- Visualización avanzada con Bloom y alertas clínicas automáticas.
 
 ---
 
-## 📁 Archivo .cyp
+## ✍️ Autor
 
-El archivo `documentacion.cyp` contiene los comandos para poblar la base de datos con nodos y relaciones iniciales del sistema.
+Proyecto realizado por Ariel para uso académico y/o profesional en entornos médicos simulados.
+
+---
+
+## 📄 Licencia
+
+Este repositorio está bajo licencia MIT. Podés usarlo, modificarlo y distribuirlo con fines educativos o profesionales.
+
